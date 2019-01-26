@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/Education/C C++ Codes/ABP.h
+structures.h
+D:/Education/C C++ Codes/structures.h
+
+D:/Education/C C++ Codes/Simulator.cpp
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+ABP.h
+D:/Education/C C++ Codes/ABP.h
+
+D:/Education/C C++ Codes/structures.h
+
