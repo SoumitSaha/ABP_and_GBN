@@ -83,10 +83,13 @@
 		<Unit filename="D:/Education/C C++ Codes/ABP.h">
 			<Option target="C_C___Codes"/>
 		</Unit>
+		<Unit filename="D:/Education/C C++ Codes/GBN.h">
+			<Option target="C_C___Codes"/>
+		</Unit>
 		<Unit filename="D:/Education/C C++ Codes/Simulator.cpp">
 			<Option target="C_C___Codes"/>
 		</Unit>
-		<Unit filename="D:/Education/C C++ Codes/cmake-build-debug/GBN.h">
+		<Unit filename="D:/Education/C C++ Codes/chksum.h">
 			<Option target="C_C___Codes"/>
 		</Unit>
 		<Unit filename="D:/Education/C C++ Codes/structures.h">
