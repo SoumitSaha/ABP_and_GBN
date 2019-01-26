@@ -1,7 +1,9 @@
-#include <stdio.h>
+#include <cstdio>
 #include <stdlib.h>
 #include <string.h>
-#include "ABP.h"
+//#include "ABP.h"
+#include "rdt_gbn.h"
+
 
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: SLIGHTLY MODIFIED

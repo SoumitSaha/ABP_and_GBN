@@ -1,6 +1,39 @@
+/********* FUNCTION PROTOTYPES. DEFINED IN THE LATER PART******************/
+void starttimer(int AorB, float increment);
+void stoptimer(int AorB);
+void tolayer3(int AorB, struct pkt packet);
+void tolayer5(int AorB, char datasent[20]);
+
+#define BIDIRECTIONAL 0 /* change to 1 if you're doing extra credit */
+/* and write a routine called B_output */
+
+
+/* a "msg" is the data unit passed from layer 5 (teachers code) to layer  */
+/* 4 (students' code).  It contains the data (characters) to be delivered */
+/* to layer 5 via the students transport level protocol entities.         */
+struct msg
+{
+    char data[20];
+};
+
+/* a packet is the data unit passed from layer 4 (students code) to layer */
+/* 3 (teachers code).  Note the pre-defined packet structure, which all   */
+/* students must follow. */
+struct pkt
+{
+    int seqnum;
+    int acknum;
+    int checksum;
+    char payload[20];
+};
+
+#define TIMEOUT 20.0
+#define DEFAULT_ACK 5
+#define WAIT_FOR_PKG 3
+#define WAIT_FOR_ACK 4
+
 #define   A    0
 #define   B    1
-#include "structures.h"
 
 int calc_checksum(struct pkt *p)
 {
@@ -19,16 +52,4 @@ int calc_checksum(struct pkt *p)
     checksum += p->acknum;
     //checksum = payload + seqnum + acknum
     return checksum;
-}
-
-void log(int AorB, char *msg, struct pkt *p, struct msg *m){
-    char ch = (AorB == A)?'A':'B';
-    if(p != NULL) {
-        printf("[%c] %s. Packet[seq=%d,ack=%d,check=%d,data=%c..]\n", ch,
-               msg, p->seqnum, p->acknum, p->checksum, p->payload[0]);
-    } else if(m != NULL) {
-        printf("[%c] %s. Message[data=%c..]\n", ch, msg, m->data[0]);
-    } else {
-        printf("[%c] %s.\n", ch, msg);
-    }
 }

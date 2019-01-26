@@ -92,9 +92,6 @@
 		<Unit filename="D:/Education/C C++ Codes/chksum.h">
 			<Option target="C_C___Codes"/>
 		</Unit>
-		<Unit filename="D:/Education/C C++ Codes/structures.h">
-			<Option target="C_C___Codes"/>
-		</Unit>
 		<Unit filename="D:/Education/C C++ Codes/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

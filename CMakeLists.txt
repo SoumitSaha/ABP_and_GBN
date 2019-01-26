@@ -3,4 +3,4 @@ project(C_C___Codes)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(C_C___Codes Simulator.cpp ABP.h structures.h GBN.h chksum.h)
+add_executable(C_C___Codes Simulator.cpp rdt_abp.h rdt_gbn.h chksum.h)
