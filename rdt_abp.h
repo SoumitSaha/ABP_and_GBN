@@ -1,11 +1,15 @@
 #include "chksum.h"
-
+#include <queue>
 FILE *fp;
 int a_seq_no;
 int b_seq_no;
 
 int A_state = WAIT_FOR_PKG;
 struct pkt cur_packet;
+
+void printStat(){
+
+}
 
 void log(int AorB, char *msg, struct pkt *p, struct msg *m){
     char ch = (AorB == A)?'A':'B';
@@ -71,6 +75,7 @@ void A_output(struct msg message){
     tolayer3(A, cur_packet);
     log(A, "Send packet to layer3", &cur_packet, &message);
     logfile(A, "Send packet to layer3", &cur_packet, &message);
+
 
     // start timer
     starttimer(A, TIMEOUT);

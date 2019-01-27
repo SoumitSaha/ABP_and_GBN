@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <stdlib.h>
 #include <string.h>
-//#include "ABP.h"
-#include "rdt_gbn.h"
-
+//#include "rdt_abp.h"
+//#include "rdt_gbn.h"
+#include "rdt_gbn_2.h"
 
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: SLIGHTLY MODIFIED
@@ -61,7 +61,7 @@ struct event *evlist = NULL; /* the event list */
 int TRACE = 1;     /* for my debugging */
 int nsim = 0;      /* number of messages from 5 to 4 so far */
 int nsimmax = 0;   /* number of msgs to generate, then stop */
-float time = 0.000;
+//float time = 0.0;
 float lossprob;    /* probability that a packet is dropped  */
 float corruptprob; /* probability that one bit is packet is flipped */
 float lambda;      /* arrival rate of messages from layer 5 */
@@ -163,6 +163,7 @@ int main()
     printf(
             " Simulator terminated at time %f\n after sending %d msgs from layer5\n",
             time, nsim);
+    printStat();
 }
 
 void init() /* initialize the simulator */

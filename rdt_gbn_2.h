@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <queue>
 #include <cstring>
+
 #ifndef RDT_GBN_H
 #define RDT_GBN_H
 
@@ -16,6 +17,7 @@ struct rtp_layer_gbn {
 };
 
 /********* FUNCTION PROTOTYPES.DEFINED IN THE LATER PART******************/
+
 void tolayer3(int AorB, struct pkt packet);
 
 void tolayer5(int AorB, char datasent[20]);
@@ -24,7 +26,10 @@ void printLog(int AorB, char *msg, const struct pkt *p, struct msg *m);
 
 pkt make_pkt(msg message, int seqNum, int ackNum = ACK_ABP_DEFAULT);
 
-///============================ Timer Functions ============================
+///============================ Timer ============================
+
+bool b_timer = false;
+int latest_ack;
 
 void startTimer(int AorB, int timerNo, float increment);
 
@@ -33,6 +38,8 @@ void stopTimer(int AorB, int timerNo = 0);
 void resetTimers(int AorB);
 
 void clearTimerFlag(int AorB);
+
+
 ///=========================================================================
 
 /********* STUDENTS WRITE THE NEXT SEVEN ROUTINES *********/
@@ -186,8 +193,10 @@ void A_init() {
 /* Note that with simplex transfer from a-to-B, there is no B_output() */
 
 /* called from layer 3, when a packet arrives for layer 4 at B*/
+struct pkt temp;
 
 void B_input(struct pkt packet) {
+    //printf("ajaira abal;ksclkahd sakd ksajhdlkjcaskjdlvns,jzhd,vSK>dj,nv>KSDNv\n");
     rtp_layer_gbn &rtp_layer = B_rtp;
     printLog(B, const_cast<char *>("Receive a packet from layer3"), &packet, NULL);
     ++rtp_layer.cnt_layer3;
@@ -198,8 +207,8 @@ void B_input(struct pkt packet) {
 //		return;
     }
 
-    /* normal packet, deliver data to layer5 */
-    if (packet.seqnum == rtp_layer.nextseqnum) {
+        /* normal packet, deliver data to layer5 */
+    else if (packet.seqnum == rtp_layer.nextseqnum) {
         tolayer5(B, packet.payload);
         rtp_layer.nextseqnum = (rtp_layer.nextseqnum + 1) % SEQ_NUM_SIZE;
         ++rtp_layer.cnt_layer5;
@@ -208,21 +217,59 @@ void B_input(struct pkt packet) {
         /* duplicate packet, resend the latest ACK again */
     else if (packet.seqnum < rtp_layer.nextseqnum) {
         printLog(B, const_cast<char *>("Duplicated packet detected"), &packet, NULL);
+        if (b_timer) {
+            stopTimer(B);
+            b_timer = false;
+        }
+        packet.acknum = (rtp_layer.nextseqnum + SEQ_NUM_SIZE - 1) % SEQ_NUM_SIZE;    /* resend the latest ACK */
+        packet.checksum = calc_checksum(&packet);
+        tolayer3(B, packet);
+        printLog(B, const_cast<char *>("Send previous ACK packet to layer3"), &packet, NULL);
+        return;
     }
         /* disorder packet, resend the latest ACK again */
     else {
         printLog(B, const_cast<char *>("Disordered packet received"), &packet, NULL);
+        if (b_timer) {
+            stopTimer(B);
+            b_timer = false;
+        }
+        packet.acknum = (rtp_layer.nextseqnum + SEQ_NUM_SIZE - 1) % SEQ_NUM_SIZE;    /* resend the latest ACK */
+        packet.checksum = calc_checksum(&packet);
+        tolayer3(B, packet);
+        printLog(B, const_cast<char *>("Send previous ACK packet to layer3"), &packet, NULL);
+        return;
     }
 
     /* send back ACK with the last received seqnum */
-    packet.acknum = (rtp_layer.nextseqnum + SEQ_NUM_SIZE - 1) % SEQ_NUM_SIZE;    /* resend the latest ACK */
-    packet.checksum = calc_checksum(&packet);
-    tolayer3(B, packet);
-    printLog(B, const_cast<char *>("Send ACK packet to layer3"), &packet, NULL);
+    if (!b_timer) {
+        printf("--------------------#############----------- B timer started \n");
+        b_timer = true;
+        latest_ack = (rtp_layer.nextseqnum + SEQ_NUM_SIZE - 1) % SEQ_NUM_SIZE;
+        temp = packet;
+        printf("ACK : %d\n", latest_ack);
+        starttimer(B, 10);
+    } else {
+        printf("--------------------#############----------- B timer not started \n");
+        temp = packet;
+        latest_ack = (rtp_layer.nextseqnum + SEQ_NUM_SIZE - 1) % SEQ_NUM_SIZE;
+        printf("ACK : %d\n", latest_ack);
+    }
+
+    //packet.acknum = (rtp_layer.nextseqnum + SEQ_NUM_SIZE - 1) % SEQ_NUM_SIZE;    /* resend the latest ACK */
+
+
 }
 
 /* called when B's timer goes off */
 void B_timerinterrupt() {
+    printf("--------------##########------------  B timer interrupt.\n");
+    temp.acknum = latest_ack;    /* resend the latest ACK */
+    temp.checksum = calc_checksum(&temp);
+    printf("ACK sent : %d\n", latest_ack);
+    tolayer3(B, temp);
+    printLog(B, const_cast<char *>("Send ACK packet to layer3"), &temp, NULL);
+    b_timer = false;
 }
 
 /* the following rouytine will be called once (only) before any other */
@@ -231,19 +278,9 @@ void B_init() {
     B_rtp = {0, 0, 0, 0, nullptr, nullptr};
 }
 
-
-
-
 pkt make_pkt(msg message, int seqNum, int ackNum) {
     pkt packet = {seqNum, ackNum, 0, ""};
     strncpy(packet.payload, message.data, MSG_LEN);
-    packet.checksum = calc_checksum(&packet);
-    return packet;
-}
-
-pkt make_pkt(const char data[MSG_LEN], int seqNum, int ackNum) {
-    pkt packet = {seqNum, ackNum, 0, ""};
-    strncpy(packet.payload, data, MSG_LEN);
     packet.checksum = calc_checksum(&packet);
     return packet;
 }
@@ -254,17 +291,17 @@ void writeLog(int AorB, char *msg, const struct pkt *p, struct msg *m, float tim
     if (AorB == A) {
         if (p != NULL) {
             printf("[%c] @%f %s.Window[%d,%d) Packet[seq=%d,ack=%d,check=%d,data=%s..]\n", ch, time, msg,
-                    A_rtp.base, A_rtp.nextseqnum, p->seqnum, p->acknum, p->checksum, p->payload);
+                   A_rtp.base, A_rtp.nextseqnum, p->seqnum, p->acknum, p->checksum, p->payload);
         } else if (m != NULL) {
             printf("[%c] @%f %s.Window[%d,%d) Message[data=%c]\n", ch, time, msg, A_rtp.base, A_rtp.nextseqnum,
-                    m->data[0]);
+                   m->data[0]);
         } else {
             printf("[%c] @%f %s.Window[%d,%d)\n", ch, time, msg, A_rtp.base, A_rtp.nextseqnum);
         }
     } else {
         if (p != NULL) {
             printf("[%c] @%f %s.Expected[%d] Packet[seq=%d,ack=%d,check=%d,data=%c]\n", ch, time, msg,
-                    B_rtp.nextseqnum, p->seqnum, p->acknum, p->checksum, p->payload[0]);
+                   B_rtp.nextseqnum, p->seqnum, p->acknum, p->checksum, p->payload[0]);
         } else if (m != NULL) {
             printf("[%c] @%f %s.Expected[%d] Message[data=%c]\n", ch, time, msg, B_rtp.nextseqnum, m->data[0]);
         } else {
@@ -274,13 +311,9 @@ void writeLog(int AorB, char *msg, const struct pkt *p, struct msg *m, float tim
 }
 
 #define MAX_TIMERS (WINDOW_SIZE+1)
-bool hasTimerStarted;
+bool hasTimerStarted = false;
 //float timersQ[MAX_TIMERS];
 std::queue<std::pair<float, float >> timersQ;// startTime,Timeout
-
-void timer_init() {
-    hasTimerStarted = false;
-}
 
 void startTimer(int AorB, int timerNo, float increment) {
     if (!hasTimerStarted) {
@@ -311,12 +344,14 @@ void resetTimers(int AorB) {
     if (!hasTimerStarted)
         return;
     stoptimer(AorB);
-    hasTimerStarted = false;
+    if (AorB == A) hasTimerStarted = false;
     while (!timersQ.empty()) timersQ.pop();
 }
 
 void clearTimerFlag(int AorB) {
-    hasTimerStarted = false;
+    if (AorB == A) hasTimerStarted = false;
+    else b_timer = false;
+
 }
 
 void printLog(int AorB, char *msg, const struct pkt *p, struct msg *m) {
@@ -330,8 +365,10 @@ void printLog(int AorB, char *msg, const struct pkt *p, struct msg *m) {
 
 void printStat() {
     printf("#Sent Messages from Layer5-to   A: %d\n", A_rtp.cnt_layer5);
+    //printf("#Sent Messages to   Layer3-from A: %d\n", A_rtp.cnt_layer5 - nDroppedMessages);
     printf("#Sent Packets  to   Layer3-from A: %d\n", A_rtp.cnt_layer3);
     printf("#Sent Packets  from Layer3-to   B: %d\n", B_rtp.cnt_layer3);
     printf("#Sent Messages to   Layer5-from B: %d\n", B_rtp.cnt_layer5);
 }
+
 #endif //RDT_GBN_H

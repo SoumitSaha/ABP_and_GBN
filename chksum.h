@@ -31,9 +31,17 @@ struct pkt
 #define DEFAULT_ACK 5
 #define WAIT_FOR_PKG 3
 #define WAIT_FOR_ACK 4
+#define MSG_LEN 20
+
+
+#define ACK_ABP_DEFAULT 0x0F
+#define SEQ_ABP_DEFAULT 0x0F
+#define ACK_GBN_DEFAULT 0x0F
 
 #define   A    0
 #define   B    1
+
+float time = 0.000;
 
 int calc_checksum(struct pkt *p)
 {

@@ -6,21 +6,25 @@
 
 #IncludeRegexTransform: 
 
-D:/Education/C C++ Codes/GBN.h
-chksum.h
-D:/Education/C C++ Codes/chksum.h
-stdio.h
--
-
-D:/Education/C C++ Codes/Simulator.cpp
+D:/Education/C C++ Codes/RDT/Simulator.cpp
 cstdio
 -
 stdlib.h
 -
 string.h
 -
-GBN.h
-D:/Education/C C++ Codes/GBN.h
+rdt_gbn_2.h
+D:/Education/C C++ Codes/RDT/rdt_gbn_2.h
 
-D:/Education/C C++ Codes/chksum.h
+D:/Education/C C++ Codes/RDT/chksum.h
+
+D:/Education/C C++ Codes/RDT/rdt_gbn_2.h
+chksum.h
+D:/Education/C C++ Codes/RDT/chksum.h
+stdio.h
+-
+queue
+-
+cstring
+-
 
